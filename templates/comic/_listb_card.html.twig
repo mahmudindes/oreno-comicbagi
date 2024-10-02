@@ -1,0 +1,51 @@
+<div class="d-flex flex-column gap-1">
+    <a
+        href="{{ path('app_comic_individual', { code: comic.code }) }}"
+        class="d-flex flex-column gap-1 text-decoration-none"
+    >
+        {% set comic_titles = funcComicKingApi.comicTitles(comic.code, rec_langs, 1) %}
+        {% if comic_titles|length > 0 %}
+            {% set comic_title = comic_titles[0] %}
+        {% endif %}
+
+        <div class="bg-dark shadow" style="height: var(--comic-card-h);">
+            {% set comic_covers = funcComicKingApi.comicCovers(comic.code, [], 1) %}
+            {% if comic_covers|length > 0 %}
+                {% set comic_cover = comic_covers[0] %}
+            {% else %}
+                {% set comic_cover = null %}
+            {% endif %}
+            <img
+                src="{{
+                    comic_cover
+                    ? funcComicBagiApp.href(comic_cover.linkWebsiteHost, comic_cover.linkRelativeReference)
+                    : asset('images/comic-cover.jpg')
+                }}"
+                alt="{{ comic_title.content ?? 'Comic' }} Cover"
+                class="w-100 h-100 object-fit-cover"
+            >
+        </div>
+
+        <h5 class="text-truncate m-0 py-2 border-bottom">{{ comic_title.content ?? 'No Title' }}</h5>
+    </a>
+
+    <div class="d-flex flex-column gap-2 py-1">
+        {% set comic_chapters = funcComicBagiApp.comicChapters(comic.code, 2) %}
+
+        {% for i in 0..1 %}
+            {% set comic_chapter_name = 'X' %}
+
+            {% if comic_chapters[i] is defined %}
+                {% set comic_chapter_name = comic_chapters[i].number %}
+
+                {% if comic_chapters[i].version %}
+                    {% set comic_chapter_name = comic_chapter_name ~ ' (' ~ comic_chapters[i].version ~ ')' %}
+                {% endif %}
+            {% endif %}
+
+            <div class="">▪<span
+                class="{{ comic_chapters[i] is not defined ? 'text-decoration-line-through ' : '' }}text-truncate p-2"
+            >{{ 'Chapter ' ~ comic_chapter_name }}</span></div>
+        {% endfor %}
+    </div>
+</div>

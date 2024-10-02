@@ -1,0 +1,33 @@
+{% if result %}
+    {% set req_langs = app.request.languages|map(l => l|replace({'_': '-'})) %}
+    {% set app_langs = funcComicBagiApp.languages(null)|map(l => l.lang) %}
+    {% set rec_langs = funcComicBagiApp.recommendedLangs(app_langs, req_langs) %}
+
+    <style>
+        @media (max-width: 415.98px) {
+            .list-card {
+                --comic-card-h: 192px;
+                --comic-card-cover-w: 144px;
+                --comic-card-synopsis-h: 124px;
+            }
+        }
+    </style>
+
+    {% if paramType == 'b' %}
+        {% set listWrapperClass = 'row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6' %}
+        {% set listCardIncludePath = 'comic/_listb_card.html.twig' %}
+    {% else %}
+        {% set listWrapperClass = 'row-cols-1 row-cols-lg-2' %}
+        {% set listCardIncludePath = 'comic/_lista_card.html.twig' %}
+    {% endif %}
+
+    <div class="row {{ listWrapperClass }} g-3">
+        {% for comic in result %}
+            <div class="col list-card">
+                {{ include(listCardIncludePath) }}
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    {{ include('_err.html.twig', { message: 'No Comic Found' }) }}
+{% endif %}

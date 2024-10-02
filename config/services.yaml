@@ -22,3 +22,29 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    app.http_client_cached:
+        class: Symfony\Component\HttpClient\CachingHttpClient
+        decorates: http_client
+        arguments:
+            $client: '@.inner'
+            $store: '@http_cache.store'
+
+    App\Service\ComicKingApi:
+        class: App\Service\ComicKingApi
+        arguments:
+            $client: '@app.http_client_cached'
+            $cacheItem: '@cache.app.taggable'
+            $base: '%env(APP_API_COMICKING_BASE)%'
+
+when@dev:
+    services:
+        app.http_client_cached:
+            class: Symfony\Component\HttpClient\CachingHttpClient
+            decorates: http_client
+            arguments:
+                $client: '@.inner'
+                $store: '@http_cache.store'
+                $defaultOptions:
+                    verify_host: false
+                    verify_peer: false
