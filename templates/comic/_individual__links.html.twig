@@ -1,0 +1,62 @@
+{% set ordered_links = {} %}
+
+{% set links_matches = [] %}
+{% for language in dis_langs|merge(['🤔']) %}
+    {% set language_links = [] %}
+
+    {% for i, link in links %}
+        {% set link_match = false %}
+
+        {% set link_item_languages = funcComicBagiApp.linkItemLanguages(link.websiteHost, link.relativeReference) %}
+        {% for link_item_language in link_item_languages %}
+            {% if link_item_language.languageLang starts with language %}
+                {% set link_match = true %}
+            {% endif %}
+        {% endfor %}
+
+        {% if not link_match and not link_item_languages %}
+            {% set link_website = link.website %}
+
+            {% for website_item_language in funcComicBagiApp.websiteItemLanguages(link_website.host) %}
+                {% if website_item_language.languageLang starts with language %}
+                    {% set link_match = true %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        {% if not link_match and language == '🤔' and i not in links_matches %}
+            {% set link_match = true %}
+        {% endif %}
+
+        {% if link_match %}
+            {% set language_links = language_links|merge([link]) %}
+            {% set links_matches = links_matches|merge([i]) %}
+        {% endif %}
+    {% endfor %}
+
+    {% if language_links|length > 0 %}
+        {% set ordered_links = ordered_links|merge({(language): language_links}) %}
+    {% endif %}
+{% endfor %}
+
+{% for lang, links in ordered_links %}
+    <div id="{{ links_id ?? '' }}" class="{{ links_class ?? '' }}">
+        <span class="d-block w-100 text-center p-2">--- {{ lang|upper }} ---</span>
+        <div class="row row-cols-1 {{ links|length > 1 ? 'row-cols-sm-2' : '' }} g-1 m-0">
+            {% for link in links %}
+                <div class="col">
+                    <a
+                        target="_blank"
+                        href="{{ funcComicBagiApp.href(link.websiteHost, link.relativeReference) }}"
+                        rel="noreferrer nofollow"
+                        class="d-block text-truncate text-decoration-none p-2 border"
+                    ><img
+                        src="{{ funcComicBagiApp.href(link.websiteHost, '/favicon.ico') }}"
+                        alt=""
+                        style="height: 24px; width: 24px;"
+                    /> {{ link.websiteName }}</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endfor %}

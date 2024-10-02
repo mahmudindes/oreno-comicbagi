@@ -1,0 +1,10 @@
+<div class="p-3 border border-2">
+    <h2 class="text-center fs-6 pb-2 border-bottom">WEBSITES</h2>
+
+    {% set links = funcComicBagiApp.linksByComic(result.code, rec_langs) %}
+    {% if links|length > 0 %}
+        {{ include('comic/_individual__links.html.twig') }}
+    {% else %}
+        {{ include('_err.html.twig', { message: 'No Link Found' }) }}
+    {% endif %}
+</div>

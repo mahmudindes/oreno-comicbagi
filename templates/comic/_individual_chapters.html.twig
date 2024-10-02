@@ -1,0 +1,74 @@
+<div class="p-3 border border-2">
+    <h2 class="text-center fs-6 pb-2 border-bottom">CHAPTERS</h2>
+
+    {% if result.chapterCount > 0 %}
+        {% set comic_chapters = funcComicBagiApp.comicChapters(result.code, comic_chapter_limit, comic_chapter_offset) %}
+        <div class="d-flex flex-column gap-2">
+            <div class="row row-cols-1 {{ comic_chapters|length > 1 ? 'row-cols-sm-2' : '' }} g-1 m-0">
+                {% for chapter in comic_chapters %}
+                    <div class="col">
+                        <div class="border">
+                            {% set links = funcComicBagiApp.linksByComicChapter(
+                                result.code,
+                                chapter.number,
+                                chapter.version,
+                                rec_langs
+                            ) %}
+
+                            <button
+                                class="w-100 btn text-start {{ links|length < 1 ? 'text-secondary' : '' }} p-2"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#chapterLinks-{{ loop.index }}"
+                            >{{
+                                'Chapter ' ~ chapter.number
+                                ~ (chapter.version ? ' (' ~ chapter.version ~ ')' : '')
+                            }}</button>
+
+                            {% if links|length > 0 %}
+                                {% set links_id = 'chapterLinks-' ~ loop.index %}
+                                {% set links_class = 'collapse p-2' %}
+                                {{ include('comic/_individual__links.html.twig') }}
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <nav class ="">
+                <ul class="pagination justify-content-center m-0">
+                    {% set rawParameter = rawParameter|replace({
+                        ('chapterPage=' ~ paramChapterPage): '',
+                        ('chapterPage=' ~ paramChapterPage ~ '&'): '',
+                        ('&chapterPage=' ~ paramChapterPage): ''
+                    }) %}
+
+                    {% set prevPageNum = paramChapterPage - 1 %}
+                    {% set prevPageRef = path('app_comic_individual', { code: result.code, chapterPage: prevPageNum }) %}
+                    {% if rawParameter %}
+                        {% set prevPageRef = prevPageRef ~ '&' ~ rawParameter %}
+                    {% endif %}
+                    {% set prevPageTes = paramChapterPage > 1 %}
+                    <li class="page-item{{ prevPageTes ? '' : ' disabled' }}">
+                        <a class="page-link" href="{{ prevPageRef }}">Prev</a>
+                    </li>
+
+                    <li class="page-item active">
+                        <span class="page-link">{{ paramChapterPage }}</span>
+                    </li>
+
+                    {% set nextPageNum = paramChapterPage + 1 %}
+                    {% set nextPageRef = path('app_comic_individual', { code: result.code, chapterPage: nextPageNum }) %}
+                    {% if rawParameter %}
+                        {% set nextPageRef = nextPageRef ~ '&' ~ rawParameter %}
+                    {% endif %}
+                    {% set nextPageTes = result.chapterCount > comic_chapter_limit * paramChapterPage %}
+                    <li class="page-item{{ nextPageTes ? '' : ' disabled' }}">
+                        <a class="page-link" href="{{ nextPageRef }}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    {% else %}
+        {{ include('_err.html.twig', { message: 'No Chapter Found' }) }}
+    {% endif %}
+</div>
